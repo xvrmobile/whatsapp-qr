@@ -3,77 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp QR Link</title>
+    <title>WhatsApp Link Service</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background-color: #f0f2f5; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #075e54; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #25D366; color: white; font-size: 16px; }
-        #qrcode { margin-top: 20px; display: flex; justify-content: center; }
+        body { font-family: -apple-system, sans-serif; background: #e5ddd5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
         .hidden { display: none; }
+        h2 { color: #075e54; margin-top: 0; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-wa { background: #25D366; color: white; }
+        #qrcode { margin: 20px auto; display: inline-block; padding: 10px; background: white; border: 1px solid #eee; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #25D366; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<!-- VIEW 1: FOR THE OWNER (To generate the code) -->
-<div id="ownerView" class="card">
+<!-- OWNER PANEL: This shows when you open the link normally -->
+<div id="ownerPanel" class="card">
     <h2>QR Setup</h2>
+    <p style="font-size: 14px; color: #666;">Create a QR that shows scanners a message before opening WhatsApp.</p>
     <input type="text" id="phone" placeholder="Your Phone (e.g. 6591234567)">
-    <input type="text" id="waMsg" placeholder="Message you want to receive">
-    <button class="btn" onclick="generateQR()">Generate QR Code</button>
+    <input type="text" id="waMsg" placeholder="Message you will receive">
+    <button class="btn btn-wa" onclick="generateSmartQR()">Generate QR Code</button>
     <div id="qrcode"></div>
-    <p style="font-size: 12px; color: #666; margin-top: 10px;">Scanner will see a "Thank You" message before WhatsApp opens.</p>
+    <p id="status" style="font-size: 11px; color: #999;"></p>
 </div>
 
-<!-- VIEW 2: FOR THE SCANNER (What they see after scanning) -->
-<div id="scannerView" class="card hidden">
-    <h2>Thank You!</h2>
-    <p id="displayMsg">We are connecting you to WhatsApp now...</p>
-    <button class="btn" id="redirectBtn">Click here to start Chat</button>
+<!-- SCANNER PANEL: This shows ONLY when someone scans the QR -->
+<div id="scannerPanel" class="card hidden">
+    <h2>Success!</h2>
+    <p id="welcomeMsg">Thank you for scanning. We are opening WhatsApp for you now...</p>
+    <div class="loader"></div>
+    <button class="btn btn-wa" id="manualBtn">Open WhatsApp Now</button>
 </div>
 
 <script>
-    // CHECK: Is someone scanning this right now?
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetPhone = urlParams.get('p');
-    const targetMsg = urlParams.get('m');
+    // 1. Check if this is a scan or an owner setup
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('p');
+    const m = params.get('m');
 
-    if (targetPhone) {
-        // Show Scanner View
-        document.getElementById('ownerView').classList.add('hidden');
-        document.getElementById('scannerView').classList.remove('hidden');
+    if (p && m) {
+        // This is a SCANNER
+        document.getElementById('ownerPanel').classList.add('hidden');
+        document.getElementById('scannerPanel').classList.remove('hidden');
         
-        const finalUrl = `https://wa.me/${targetPhone}?text=${encodeURIComponent(targetMsg)}`;
+        const waLink = `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
         
         // Auto-redirect after 3 seconds
-        setTimeout(() => {
-            window.location.href = finalUrl;
-        }, 3000);
-
-        document.getElementById('redirectBtn').onclick = () => { window.location.href = finalUrl; };
+        setTimeout(() => { window.location.href = waLink; }, 3000);
+        document.getElementById('manualBtn').onclick = () => { window.location.href = waLink; };
     }
 
-    function generateQR() {
+    function generateSmartQR() {
         const phone = document.getElementById('phone').value.replace(/\D/g, '');
         const msg = document.getElementById('waMsg').value;
         
-        if (!phone) { alert("Enter phone number"); return; }
+        if (!phone) { alert("Please enter your phone number"); return; }
 
-        // Create a link to THIS current website with the data attached
-        const currentUrl = window.location.href.split('?')[0];
-        const scannerLink = `${currentUrl}?p=${phone}&m=${encodeURIComponent(msg)}`;
+        // Get your current GitHub URL automatically
+        const baseUrl = window.location.href.split('?')[0];
+        
+        // Create the "Smart Link" that points back to this page
+        const smartLink = `${baseUrl}?p=${phone}&m=${encodeURIComponent(msg)}`;
 
-        const qrContainer = document.getElementById("qrcode");
-        qrContainer.innerHTML = "";
-        new QRCode(qrContainer, {
-            text: scannerLink,
+        const qrBox = document.getElementById("qrcode");
+        qrBox.innerHTML = "";
+        new QRCode(qrBox, {
+            text: smartLink,
             width: 200,
-            height: 200
+            height: 200,
+            correctLevel : QRCode.CorrectLevel.H
         });
         
-        console.log("Scanner will be sent to: " + scannerLink);
+        document.getElementById('status').innerText = "QR links to your website first, then WhatsApp.";
     }
 </script>
 
