@@ -3,82 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart QR Link</title>
+    <title>One-Scan WhatsApp QR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 350px; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #e5ddd5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
+        h2 { color: #075e54; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 10px; }
+        .btn-gen { background-color: #25D366; color: white; }
+        .btn-wa { background-color: #34B7F1; color: white; }
+        #qrcode { margin: 20px auto; display: inline-block; padding: 10px; border: 1px solid #eee; background: white; }
         .hidden { display: none; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: #25D366; color: white; }
-        #qrcode { margin-top: 20px; display: inline-block; padding: 10px; border: 1px solid #eee; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #25D366; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<!-- OWNER INTERFACE -->
-<div id="setupMode" class="card">
-    <h2 style="color: #075e54;">QR Setup</h2>
-    <p>Enter details to create a QR that shows a message to the scanner.</p>
-    <input type="text" id="phone" placeholder="Your Phone (6591234567)">
-    <input type="text" id="msg" placeholder="WhatsApp Message Content">
-    <button class="btn" onclick="generate()">Generate Smart QR</button>
+<div id="ownerSection" class="card">
+    <h2>QR Setup</h2>
+    <p style="font-size: 14px; color: #666;">This QR code will work exactly <b>once</b>.</p>
+    <input type="text" id="phone" placeholder="Your Phone (e.g. 6591234567)">
+    <input type="text" id="msg" placeholder="WhatsApp Message">
+    <button class="btn btn-gen" onclick="generateAndSave()">Generate One-Scan QR</button>
     <div id="qrcode"></div>
-    <div id="debugInfo" style="font-size: 10px; color: #999; margin-top: 10px; word-break: break-all;"></div>
+    <p id="debug" style="font-size: 10px; color: #aaa; word-break: break-all;"></p>
 </div>
 
-<!-- SCANNER INTERFACE -->
-<div id="scanMode" class="card hidden">
-    <h2 style="color: #075e54;">Congratulation on your big day!</h2>
-    <h2 style="color: #075e54;">I am so happy for you !</h2>
-    <p>Here's is something to kick-start your new phase of life.</p>
-    <p>Send out the message to find out.... Opening WhatsApp in 8 seconds...</p>
-    <div class="loader"></div>
-    <button class="btn" id="waButton">Open WhatsApp Now</button>
+<div id="scannerSection" class="card hidden">
+    <h2 id="scanTitle">Checking Code...</h2>
+    <p id="scanStatus">Please wait a moment.</p>
+    <div id="loader" class="loader"></div>
+    <button id="waBtn" class="btn btn-wa hidden">Open WhatsApp Now</button>
 </div>
 
 <script>
-    // 1. DETECTION LOGIC
-    const params = new URLSearchParams(window.location.search);
-    const p = params.get('p');
-    const m = params.get('m');
+    // --- STEP 1: PASTE YOUR FIREBASE CONFIG HERE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBjZ8NV2a6ioBymuuP_rLvcRyU235vBED0",
+        authDomain: "whataspp-qr-manager.firebaseapp.com",
+        projectId: "whataspp-qr-manager",
+        storageBucket: "whataspp-qr-manager.firebasestorage.app",
+        messagingSenderId: "167596898871",
+        appId: "1:167596898871:web:4088c105ebf5217b53ddb2"
+};
 
-    if (p && m) {
-        // ACTIVATE SCANNER MODE
-        document.getElementById('setupMode').classList.add('hidden');
-        document.getElementById('scanMode').classList.remove('hidden');
-        
-        const finalLink = `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
-        
-        document.getElementById('waButton').onclick = () => { window.location.href = finalLink; };
-        setTimeout(() => { window.location.href = finalLink; }, 8000);
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Check for ID in URL
+    const params = new URLSearchParams(window.location.search);
+    const qrId = params.get('id');
+
+    // --- STEP 2: SCANNER LOGIC ---
+    if (qrId) {
+        document.getElementById('ownerSection').classList.add('hidden');
+        document.getElementById('scannerSection').classList.remove('hidden');
+
+        const docRef = db.collection("qrcodes").doc(qrId);
+
+        docRef.get().then((doc) => {
+            if (doc.exists && doc.data().isUsed === false) {
+                const data = doc.data();
+                const waLink = `https://wa.me/${data.phone}?text=${encodeURIComponent(data.msg)}`;
+                
+                // Show success message
+                document.getElementById('scanTitle').innerText = "Success!";
+                document.getElementById('scanStatus').innerText = "Thank you for scanning. Opening WhatsApp in 6 seconds...";
+                document.getElementById('waBtn').classList.remove('hidden');
+
+                // Mark as used in database immediately
+                docRef.update({ isUsed: true });
+
+                // Redirect after 6 seconds
+                document.getElementById('waBtn').onclick = () => { window.location.href = waLink; };
+                setTimeout(() => { window.location.href = waLink; }, 6000);
+            } else {
+                // Already used or doesn't exist
+                document.getElementById('scanTitle').innerText = "Expired";
+                document.getElementById('scanStatus').innerText = "Sorry, this QR code has already been used or is invalid.";
+                document.getElementById('loader').classList.add('hidden');
+            }
+        }).catch((error) => {
+            console.error("Error:", error);
+            document.getElementById('scanStatus').innerText = "Database error. Check your Firestore Rules.";
+        });
     }
 
-    // 2. GENERATION LOGIC
-    function generate() {
+    // --- STEP 3: OWNER LOGIC ---
+    function generateAndSave() {
         const phone = document.getElementById('phone').value.replace(/\D/g, '');
-        const message = document.getElementById('msg').value;
-        
-        if(!phone) { alert("Please enter a phone number"); return; }
+        const msg = document.getElementById('msg').value;
 
-        // Automatically find the URL of your GitHub page
-        const currentUrl = window.location.href.split('?')[0];
-        
-        // This is the CRITICAL part: The QR must point to YOUR site
-        const smartLink = `${currentUrl}?p=${phone}&m=${encodeURIComponent(message)}`;
+        if (!phone) { alert("Please enter a phone number"); return; }
 
-        // Show the link for debugging
-        document.getElementById('debugInfo').innerText = "QR points to: " + smartLink;
-
-        const qrDiv = document.getElementById("qrcode");
-        qrDiv.innerHTML = "";
-        new QRCode(qrDiv, {
-            text: smartLink,
-            width: 200,
-            height: 200,
-            correctLevel : QRCode.CorrectLevel.H
+        // Save to Firebase first
+        db.collection("qrcodes").add({
+            phone: phone,
+            msg: msg,
+            isUsed: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        })
+        .then((docRef) => {
+            // Generate link pointing to THIS page with the new ID
+            const baseUrl = window.location.href.split('?')[0];
+            const finalLink = `${baseUrl}?id=${docRef.id}`;
+            
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), {
+                text: finalLink,
+                width: 200,
+                height: 200
+            });
+            document.getElementById('debug').innerText = "Linked to database ID: " + docRef.id;
+        })
+        .catch((error) => {
+            alert("Error saving to database. Did you set Firestore to 'Test Mode'?");
+            console.error(error);
         });
     }
 </script>
