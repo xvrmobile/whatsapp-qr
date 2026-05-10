@@ -31,8 +31,9 @@
 
 <!-- SCANNER INTERFACE -->
 <div id="scanMode" class="card hidden">
-    <h2 style="color: #075e54;">Congratulation on your big day! I am so happy for you ! </h2>
-    <p>Here's is something to kick start this new phase of your life. Send out the message to find out. Opening WhatsApp in 3 seconds...</p>
+    <h2 style="color: #075e54;">Congratulation on your big day!</h2>
+    <h2 style="color: #075e54;">I am so happy for you !</h2>
+    <p>Here's is something to kick start this new phase of your life. Send out the message to find out. Opening WhatsApp in 6 seconds...</p>
     <div class="loader"></div>
     <button class="btn" id="waButton">Open WhatsApp Now</button>
 </div>
@@ -51,7 +52,7 @@
         const finalLink = `https://wa.me/${p}?text=${encodeURIComponent(m)}`;
         
         document.getElementById('waButton').onclick = () => { window.location.href = finalLink; };
-        setTimeout(() => { window.location.href = finalLink; }, 3000);
+        setTimeout(() => { window.location.href = finalLink; }, 6000);
     }
 
     // 2. GENERATION LOGIC
