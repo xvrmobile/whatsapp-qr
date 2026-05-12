@@ -61,8 +61,8 @@
                 docRef.update({ isUsed: true });
 
                 // 2. SEND NOTIFICATION TO YOU VIA TELEGRAM
-                const botToken = "YOUR_BOT_TOKEN_HERE";
-                const chatId = "YOUR_USER_ID_HERE";
+                const botToken = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
+                const chatId = "623086762";
                 const text = `🚨 QR Scanned! \nMessage: ${data.msg}\nPhone: ${data.phone}`;
                 
                 fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
