@@ -26,17 +26,23 @@
             background-attachment: fixed;
         }
 
-        .card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px);
-            padding: 40px; 
-            border-radius: 32px; 
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
-            width: 90%; 
-            max-width: 400px; 
-            text-align: center;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
+     .card { 
+    /* This sets the color to white but only 70% solid (transparent) */
+    background: rgba(255, 255, 255, 0.5); 
+    
+    /* This blurs the image BEHIND the card, making it look like frosted glass */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+
+    /* The rest of your existing card styles... */
+    padding: 40px; 
+    border-radius: 32px; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
+    width: 90%; 
+    max-width: 400px; 
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.4);
+}
 
         h2 { font-size: 28px; margin-bottom: 8px; color: #111827; }
         p { color: #4b5563; line-height: 1.6; margin-bottom: 24px; font-size: 16px; }
