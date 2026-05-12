@@ -48,7 +48,7 @@
     const params = new URLSearchParams(window.location.search);
     const qrId = params.get('id');
 
-    if (qrId) {
+ if (qrId) {
         document.getElementById('ownerSection').classList.add('hidden');
         document.getElementById('scannerSection').classList.remove('hidden');
         const docRef = db.collection("qrcodes").doc(qrId);
@@ -56,10 +56,21 @@
         docRef.get().then((doc) => {
             if (doc.exists && !doc.data().isUsed) {
                 const data = doc.data();
-                const waLink = `https://wa.me/${data.phone}?text=${encodeURIComponent(data.msg)}`;
+                
+                // 1. Mark as used
                 docRef.update({ isUsed: true });
-                document.getElementById('waBtn').onclick = () => { window.location.href = waLink; };
-                setTimeout(() => { window.location.href = waLink; }, 6000);
+
+                // 2. SEND NOTIFICATION TO YOU VIA TELEGRAM
+                const botToken = "YOUR_BOT_TOKEN_HERE";
+                const chatId = "YOUR_USER_ID_HERE";
+                const text = `🚨 QR Scanned! \nMessage: ${data.msg}\nPhone: ${data.phone}`;
+                
+                fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
+
+                // 3. Update the scanner's screen
+                document.getElementById('scanTitle').innerText = "Verified";
+                document.getElementById('scanStatus').innerText = "Thank you! Your scan has been recorded. You may close this page.";
+                document.getElementById('waBtn').classList.add('hidden');
             } else {
                 document.getElementById('scanTitle').innerText = "Expired";
                 document.getElementById('scanStatus').innerText = "This code has already been used.";
