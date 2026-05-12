@@ -3,33 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>One-Scan WhatsApp QR</title>
+    <title>QR Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
     <style>
-        body { font-family: sans-serif; background-color: #e5ddd5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; background-color: #25D366; color: white; }
-        #qrcode { margin-top: 20px; display: inline-block; }
+        :root { --primary: #10b981; --error: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; color: #1e293b; }
+        .card { background: white; padding: 40px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        h2 { margin: 0 0 10px; font-weight: 600; font-size: 24px; }
+        p { color: #64748b; line-height: 1.5; margin-bottom: 25px; }
+        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; transition: 0.2s; }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; background: var(--primary); color: white; font-size: 16px; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
+        #qrcode { margin-top: 25px; padding: 15px; background: white; border-radius: 12px; display: inline-block; border: 1px solid #f1f5f9; }
         .hidden { display: none; }
+
+        /* Animated Icons */
+        .icon-box { width: 80px; height: 80px; margin: 0 auto 20px; }
+        .success-svg { stroke: var(--primary); fill: none; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+        .error-svg { stroke: var(--error); fill: none; stroke-width: 4; stroke-linecap: round; }
+        .draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 0.6s ease-out forwards; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
     </style>
 </head>
 <body>
 
 <div id="ownerSection" class="card">
     <h2>QR Setup</h2>
-    <input type="text" id="phone" placeholder="Phone (e.g. 65...)">
-    <input type="text" id="msg" placeholder="Message">
-    <button class="btn" onclick="generateAndSave()">Generate QR</button>
+    <p>Create a one-time verify code.</p>
+    <input type="text" id="phone" placeholder="Phone Number">
+    <input type="text" id="msg" placeholder="Message to Scanner (e.g. Welcome!)">
+    <button class="btn" onclick="generateAndSave()">Generate QR Code</button>
     <div id="qrcode"></div>
 </div>
 
 <div id="scannerSection" class="card hidden">
-    <h2 id="scanTitle">Success!</h2>
-    <p id="scanStatus">Opening WhatsApp in 6 seconds...</p>
-    <button class="btn" id="waBtn">Open Now</button>
+    <div class="icon-box" id="iconContainer">
+        </div>
+    <h2 id="scanTitle">Checking...</h2>
+    <p id="scanStatus">Validating your unique QR code.</p>
 </div>
 
 <script>
@@ -44,11 +60,10 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
-
     const params = new URLSearchParams(window.location.search);
     const qrId = params.get('id');
 
- if (qrId) {
+    if (qrId) {
         document.getElementById('ownerSection').classList.add('hidden');
         document.getElementById('scannerSection').classList.remove('hidden');
         const docRef = db.collection("qrcodes").doc(qrId);
@@ -56,30 +71,28 @@
         docRef.get().then((doc) => {
             if (doc.exists && !doc.data().isUsed) {
                 const data = doc.data();
-                
-                // 1. Mark as used
                 docRef.update({ isUsed: true });
 
-                // 2. SEND NOTIFICATION TO YOU VIA TELEGRAM
-                const botToken = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
-                const chatId = "623086762";
-                const text = `🚨 QR Scanned! \nMessage: ${data.msg}\nPhone: ${data.phone}`;
-                
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
+                // TELEGRAM ALERT
+                const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY"; // PASTE YOUR TOKEN
+                const id = "623086762"; // PASTE YOUR ID
+                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${encodeURIComponent("🚨 Scan: " + data.msg)}`);
 
-                // 3. Update the scanner's screen
-                document.getElementById('scanTitle').innerText = "Verified";
-                document.getElementById('scanStatus').innerText = "Thank you! Your scan has been recorded. You may close this page.";
-                document.getElementById('waBtn').classList.add('hidden');
+                // SUCCESS UI
+                document.getElementById('iconContainer').innerHTML = `<svg class="success-svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" class="draw"/><path d="M14 27l7 7 16-16" class="draw" style="animation-delay: 0.3s"/></svg>`;
+                document.getElementById('scanTitle').innerText = "Verified!";
+                document.getElementById('scanStatus').innerText = data.msg || "Thank you! Your scan has been recorded.";
             } else {
+                // EXPIRED UI
+                document.getElementById('iconContainer').innerHTML = `<svg class="error-svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" class="draw"/><path d="M16 16l20 20M36 16L16 36" class="draw" style="animation-delay: 0.3s"/></svg>`;
                 document.getElementById('scanTitle').innerText = "Expired";
-                document.getElementById('scanStatus').innerText = "This code has already been used.";
+                document.getElementById('scanStatus').innerText = "This QR code has already been scanned.";
             }
         });
     }
 
     function generateAndSave() {
-        const phone = document.getElementById('phone').value.replace(/\D/g, '');
+        const phone = document.getElementById('phone').value;
         const msg = document.getElementById('msg').value;
         if (!phone) return;
 
@@ -88,7 +101,7 @@
             const baseUrl = window.location.href.split('?')[0];
             const finalLink = `${baseUrl}?id=${docRef.id}`;
             document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById('qrcode'), finalLink);
+            new QRCode(document.getElementById('qrcode'), { text: finalLink, width: 180, height: 180 });
         });
     }
 </script>
