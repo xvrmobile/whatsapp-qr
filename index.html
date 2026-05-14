@@ -117,8 +117,8 @@
                 docRef.update({ isUsed: true });
 
                 // Telegram notification stays the same
-                const token = "YOUR_BOT_TOKEN";
-                const id = "YOUR_USER_ID";
+                const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
+                const id = "623086762";
                 fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${encodeURIComponent("💐 Scan Verified: " + data.msg)}`);
 
                 // SUCCESS UI: Replace tick with a Bouquet and update text
