@@ -115,7 +115,7 @@
                 fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("💐 New Scan: " + data.msg)}`);
 
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💐</div>`;
-                document.getElementById('scanTitle').innerText = "做得好！";
+                document.getElementById('scanTitle').innerText = "幸福长久，相敬如宾, 惜缘！";
                 document.getElementById('scanStatus').innerText = data.msg || "谢谢您的光临！";
             } else {
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px;">❌</div>`;
