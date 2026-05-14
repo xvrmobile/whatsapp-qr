@@ -116,11 +116,11 @@
 
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💐</div>`;
                 document.getElementById('scanTitle').innerText = "幸福长久，相敬如宾, 惜缘！";
-                document.getElementById('scanStatus').innerText = data.msg || "谢谢您的光临！";
+                document.getElementById('scanStatus').innerText = data.msg || "谢谢！";
             } else {
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px;">❌</div>`;
-                document.getElementById('scanTitle').innerText = "已过期";
-                document.getElementById('scanStatus').innerText = "此码已失效。";
+                document.getElementById('scanTitle').innerText = "扫码失败";
+                document.getElementById('scanStatus').innerText = "此码已被扫过了。";
             }
         });
     }
