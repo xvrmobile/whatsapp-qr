@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Elegant Font Imports -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Noto+Serif+SC:wght@700&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
@@ -17,81 +18,73 @@
             margin: 0; 
             display: flex; 
             justify-content: center; 
-            align-items: flex-end; 
+            align-items: flex-end; /* Moves box to bottom */
             min-height: 100vh;
-            /* CHANGE 'bakery-bg.jpg' TO YOUR FILENAME OR A FULL URL */
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('188.png');
+            /* Replace 'bakery-bg.jpg' with your actual image name */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('bakery-bg.jpg');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
         }
 
-     .card { 
-    /* This sets the color to white but only 70% solid (transparent) */
-    background: rgba(255, 255, 255, 0.1); 
-    
-    /* This blurs the image BEHIND the card, making it look like frosted glass */
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* For Safari support */
-
-    /* The rest of your existing card styles... */
-    padding: 40px; 
-    border-radius: 32px; 
-    box-shadow: 0 20px 50px rgba(0,0,0,0.3); 
-    width: 90%; 
-    max-width: 400px; 
-    text-align: center;
-         /* ADD THIS LINE */
-    margin-bottom: 50px;
-
-    border: 1px solid rgba(255,255,255,0.4);
-}
-
-        h2 { font-size: 28px; margin-bottom: 8px; color: #111827; }
-        p { color: #4b5563; line-height: 1.6; margin-bottom: 24px; font-size: 16px; }
-        
-        input { 
-            width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #f3f4f6; 
-            border-radius: 16px; font-size: 16px; box-sizing: border-box; transition: 0.3s;
+        .card { 
+            background: rgba(255, 255, 255, 0.25); /* Transparent Glass */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px; 
+            border-radius: 32px; 
+            width: 90%; 
+            max-width: 400px; 
+            text-align: center;
+            margin-bottom: 50px; 
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
         }
-        input:focus { outline: none; border-color: var(--primary); background: white; }
 
-        .btn { 
-            width: 100%; padding: 16px; border: none; border-radius: 16px; 
-            font-weight: 700; cursor: pointer; background: var(--primary); 
-            color: white; font-size: 16px; transition: 0.3s; margin-top: 10px;
-            box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.3);
+        h2 { 
+            font-family: 'Playfair Display', 'Noto Serif SC', serif; 
+            font-size: 32px; 
+            color: #ffffff; 
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
-        .btn:hover { filter: brightness(1.1); transform: translateY(-2px); }
 
-        #qrcode { margin-top: 25px; padding: 20px; background: white; border-radius: 20px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        /* White and Bold Scanner Text */
+        #scanStatus { 
+            color: #ffffff !important; 
+            font-weight: 700; 
+            font-size: 20px; 
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; font-size: 16px; }
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        #qrcode { margin-top: 20px; background: white; padding: 10px; border-radius: 10px; display: inline-block; }
         .hidden { display: none; }
 
-        /* Animated Result Icons */
-        .status-icon { width: 100px; height: 100px; margin: 0 auto 20px; }
-        .draw { stroke-dasharray: 100; stroke-dashoffset: 100; animation: draw 0.8s ease-out forwards; }
-        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes pop {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
 <div id="ownerSection" class="card">
     <h2>QR Setup</h2>
-    <p>Secure one-time validation.</p>
-    <input type="text" id="phone" placeholder="Recipient Phone">
-    <input type="text" id="msg" placeholder="Message to Scanner">
-    <button class="btn" onclick="generateAndSave()">Create Custom QR</button>
+    <input type="text" id="phone" placeholder="Phone Number">
+    <input type="text" id="msg" placeholder="Message (Chinese supported)">
+    <button class="btn" onclick="generateAndSave()">Generate QR</button>
     <div id="qrcode"></div>
 </div>
 
 <div id="scannerSection" class="card hidden">
-    <div class="status-icon" id="iconBox"></div>
-    <h2 id="scanTitle">Processing...</h2>
-    <p id="scanStatus">Please wait.</p>
+    <div id="iconBox" style="margin-bottom: 20px;"></div>
+    <h2 id="scanTitle">Checking...</h2>
+    <p id="scanStatus"></p>
 </div>
 
 <script>
-    // --- KEEP YOUR FIREBASE CONFIG HERE ---
+    // --- PASTE YOUR ACTUAL FIREBASE CONFIG HERE ---
     const firebaseConfig = {
         apiKey: "AIzaSyBjZ8NV2a6ioBymuuP_rLvcRyU235vBED0",
         authDomain: "whataspp-qr-manager.firebaseapp.com",
@@ -111,25 +104,23 @@
         document.getElementById('scannerSection').classList.remove('hidden');
         const docRef = db.collection("qrcodes").doc(qrId);
 
-      docRef.get().then((doc) => {
+        docRef.get().then((doc) => {
             if (doc.exists && !doc.data().isUsed) {
                 const data = doc.data();
                 docRef.update({ isUsed: true });
 
-                // Telegram notification stays the same
+                // --- PASTE YOUR TELEGRAM TOKEN AND ID HERE ---
                 const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
-                const id = "623086762";
-                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${encodeURIComponent("💐 Scan Verified: " + data.msg)}`);
+                const chatId = "623086762";
+                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("💐 New Scan: " + data.msg)}`);
 
-                // SUCCESS UI: Replace tick with a Bouquet and update text
-                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); animation: pop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);">💐</div>`;
-                document.getElementById('scanTitle').innerText = "做得好！"; // "Well done!" in Chinese
+                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💐</div>`;
+                document.getElementById('scanTitle').innerText = "做得好！";
                 document.getElementById('scanStatus').innerText = data.msg || "谢谢您的光临！";
             } else {
-                // Keep the error icon as the red circle
-                document.getElementById('iconBox').innerHTML = `<svg viewBox="0 0 52 52" fill="none" stroke="#dc2626" stroke-width="4"><circle cx="26" cy="26" r="25" class="draw"/><path d="M16 16l20 20M36 16L16 36" class="draw" style="animation-delay: 0.3s"/></svg>`;
+                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px;">❌</div>`;
                 document.getElementById('scanTitle').innerText = "已过期";
-                document.getElementById('scanStatus').innerText = "此二维码已使用过。";
+                document.getElementById('scanStatus').innerText = "此码已失效。";
             }
         });
     }
@@ -140,7 +131,8 @@
         if (!phone) return;
         db.collection("qrcodes").add({ phone, msg, isUsed: false }).then((docRef) => {
             const baseUrl = window.location.href.split('?')[0];
-            new QRCode(document.getElementById('qrcode'), { text: `${baseUrl}?id=${docRef.id}`, width: 180, height: 180 });
+            document.getElementById('qrcode').innerHTML = "";
+            new QRCode(document.getElementById('qrcode'), { text: `${baseUrl}?id=${docRef.id}`, width: 150, height: 150 });
         });
     }
 </script>
