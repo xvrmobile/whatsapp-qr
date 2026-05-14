@@ -111,23 +111,25 @@
         document.getElementById('scannerSection').classList.remove('hidden');
         const docRef = db.collection("qrcodes").doc(qrId);
 
-        docRef.get().then((doc) => {
+      docRef.get().then((doc) => {
             if (doc.exists && !doc.data().isUsed) {
                 const data = doc.data();
                 docRef.update({ isUsed: true });
 
-                // TELEGRAM - FILL THESE IN
-                const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
-                const id = "623086762";
-                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${encodeURIComponent("✅ Valid Scan: " + data.msg)}`);
+                // Telegram notification stays the same
+                const token = "YOUR_BOT_TOKEN";
+                const id = "YOUR_USER_ID";
+                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${id}&text=${encodeURIComponent("💐 Scan Verified: " + data.msg)}`);
 
-                document.getElementById('iconBox').innerHTML = `<svg viewBox="0 0 52 52" fill="none" stroke="#059669" stroke-width="4"><circle cx="26" cy="26" r="25" class="draw"/><path d="M14 27l7 7 16-16" class="draw" style="animation-delay: 0.3s"/></svg>`;
-                document.getElementById('scanTitle').innerText = "Well Done!";
-                document.getElementById('scanStatus').innerText = data.msg || "Record saved.";
+                // SUCCESS UI: Replace tick with a Bouquet and update text
+                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); animation: pop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);">💐</div>`;
+                document.getElementById('scanTitle').innerText = "做得好！"; // "Well done!" in Chinese
+                document.getElementById('scanStatus').innerText = data.msg || "谢谢您的光临！";
             } else {
+                // Keep the error icon as the red circle
                 document.getElementById('iconBox').innerHTML = `<svg viewBox="0 0 52 52" fill="none" stroke="#dc2626" stroke-width="4"><circle cx="26" cy="26" r="25" class="draw"/><path d="M16 16l20 20M36 16L16 36" class="draw" style="animation-delay: 0.3s"/></svg>`;
-                document.getElementById('scanTitle').innerText = "Already Used";
-                document.getElementById('scanStatus').innerText = "This code has already been checked.";
+                document.getElementById('scanTitle').innerText = "已过期";
+                document.getElementById('scanStatus').innerText = "此二维码已使用过。";
             }
         });
     }
