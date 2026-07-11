@@ -171,11 +171,11 @@
                 // Telegram Alert Setup
                 const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
                 const chatId = "623086762";
-                const alertText = `💐 New Scan: ${data.msg || 'No message'} (Phone: ${data.phone})`;
+                const alertText = `💍 New Scan: ${data.msg || 'No message'} (Phone: ${data.phone})`;
                 
                 fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertText)}`);
 
-                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💐</div>`;
+                document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💍</div>`;
                 document.getElementById('scanTitle').innerText = "幸福长久，相敬如宾, 惜缘！";
                 document.getElementById('scanStatus').innerText = data.msg || "谢谢！";
             } else {
