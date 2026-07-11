@@ -11,8 +11,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --primary: #059669; --error: #dc2626; }
+        :root { 
+            --primary: #059669; 
+            --error: #dc2626; 
+        }
         
+        * {
+            box-sizing: border-box; /* Fixes elements overflowing layout container widths */
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             margin: 0; 
@@ -20,7 +27,6 @@
             justify-content: center; 
             align-items: flex-end; /* Moves box to bottom */
             min-height: 100vh;
-            /* Replace 'bakery-bg.jpg' with your actual image name */
             background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('188.png');
             background-size: cover;
             background-position: center;
@@ -44,6 +50,7 @@
             font-family: 'Playfair Display', 'Noto Serif SC', serif; 
             font-size: 32px; 
             color: #ffffff; 
+            margin-top: 0;
             margin-bottom: 10px;
             text-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
@@ -54,11 +61,50 @@
             font-weight: 700; 
             font-size: 20px; 
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            word-break: break-word;
         }
 
-        input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: none; font-size: 16px; }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        #qrcode { margin-top: 20px; background: white; padding: 10px; border-radius: 10px; display: inline-block; }
+        input { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 8px 0; 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.2); 
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        input:focus {
+            outline: 2px solid var(--primary);
+        }
+
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-top: 8px;
+            font-size: 16px;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #047857;
+        }
+
+        #qrcode { 
+            margin-top: 25px; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 16px; 
+            display: inline-block; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
         .hidden { display: none; }
 
         @keyframes pop {
@@ -74,7 +120,7 @@
     <input type="text" id="phone" placeholder="Phone Number">
     <input type="text" id="msg" placeholder="Message (Chinese supported)">
     <button class="btn" onclick="generateAndSave()">Generate QR</button>
-    <div id="qrcode"></div>
+    <div id="qrcode" class="hidden"></div>
 </div>
 
 <div id="scannerSection" class="card hidden">
@@ -84,7 +130,7 @@
 </div>
 
 <script>
-    // --- PASTE YOUR ACTUAL FIREBASE CONFIG HERE ---
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBjZ8NV2a6ioBymuuP_rLvcRyU235vBED0",
         authDomain: "whataspp-qr-manager.firebaseapp.com",
@@ -99,6 +145,7 @@
     const params = new URLSearchParams(window.location.search);
     const qrId = params.get('id');
 
+    // Handle Scan Mode
     if (qrId) {
         document.getElementById('ownerSection').classList.add('hidden');
         document.getElementById('scannerSection').classList.remove('hidden');
@@ -109,10 +156,12 @@
                 const data = doc.data();
                 docRef.update({ isUsed: true });
 
-                // --- PASTE YOUR TELEGRAM TOKEN AND ID HERE ---
+                // Telegram Alert Setup
                 const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
                 const chatId = "623086762";
-                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent("💐 New Scan: " + data.msg)}`);
+                const alertText = `💐 New Scan: ${data.msg || 'No message'} (Phone: ${data.phone})`;
+                
+                fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertText)}`);
 
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px; animation: pop 0.6s ease-out;">💐</div>`;
                 document.getElementById('scanTitle').innerText = "幸福长久，相敬如宾, 惜缘！";
@@ -120,19 +169,49 @@
             } else {
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 80px;">❌</div>`;
                 document.getElementById('scanTitle').innerText = "扫码失败";
+                document.getElementById('scanStatus').style.color = "var(--error)";
                 document.getElementById('scanStatus').innerText = "此码已被扫过了。";
             }
+        }).catch((error) => {
+            console.error("Error reading database: ", error);
+            document.getElementById('scanTitle').innerText = "错误";
+            document.getElementById('scanStatus').innerText = "无法读取数据库信息。";
         });
     }
 
+    // Handle Generation Mode
     function generateAndSave() {
-        const phone = document.getElementById('phone').value;
-        const msg = document.getElementById('msg').value;
-        if (!phone) return;
-        db.collection("qrcodes").add({ phone, msg, isUsed: false }).then((docRef) => {
+        const phone = document.getElementById('phone').value.trim();
+        const msg = document.getElementById('msg').value.trim();
+        
+        if (!phone) {
+            alert("Please enter a phone number.");
+            return;
+        }
+        
+        db.collection("qrcodes").add({ 
+            phone: phone, 
+            msg: msg, 
+            isUsed: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp() // Good practice for sorting later
+        }).then((docRef) => {
             const baseUrl = window.location.href.split('?')[0];
-            document.getElementById('qrcode').innerHTML = "";
-            new QRCode(document.getElementById('qrcode'), { text: `${baseUrl}?id=${docRef.id}`, width: 150, height: 150 });
+            const qrTargetUrl = `${baseUrl}?id=${docRef.id}`;
+            
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+            qrContainer.classList.remove('hidden');
+            
+            // Generate the code element safely
+            new QRCode(qrContainer, { 
+                text: qrTargetUrl, 
+                width: 180, 
+                height: 180,
+                correctLevel: QRCode.CorrectLevel.H // Higher error correction handles minor print blemishes
+            });
+        }).catch((err) => {
+            alert("Error saving code to Firebase. Check console.");
+            console.error(err);
         });
     }
 </script>
