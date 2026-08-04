@@ -45,7 +45,12 @@
 
         /* Theme 2: Birthday */
         body.theme-birthday {
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('birthday_bg.png'); /* Replace with your image name */
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('birthday_bg.png'); /* Replace with your birthday background image */
+        }
+
+        /* Theme 3: New Home */
+        body.theme-newhome {
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('newhome_bg.png'); /* Replace with your new home background image */
         }
 
         /* --- GLASS CARD DESIGN --- */
@@ -142,6 +147,7 @@
     <select id="themeSelect">
         <option value="wedding">💐 Floral / Wedding</option>
         <option value="birthday">🎂 Birthday Party</option>
+        <option value="newhome">🏠 New Home Celebration</option>
     </select>
 
     <button class="btn" onclick="generateAndSave()">Generate QR</button>
@@ -186,6 +192,12 @@
             icon: '🎂',
             title: '祝你生日快乐，心想事成！',
             telegramPrefix: '🎂 Birthday Scan'
+        },
+        newhome: {
+            bodyClass: 'theme-newhome',
+            icon: '🏠',
+            title: '乔迁之喜，阖家欢乐，顺心如意！',
+            telegramPrefix: '🏠 New Home Scan'
         }
     };
 
