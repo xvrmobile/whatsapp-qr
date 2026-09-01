@@ -45,12 +45,12 @@
 
         /* Theme 2: Birthday */
         body.theme-birthday {
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('birthday_bg.png'); /* Replace with your birthday background image */
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('birthday_bg.png');
         }
 
         /* Theme 3: New Home */
         body.theme-newhome {
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('newhome_bg.png'); /* Replace with your new home background image */
+            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('newhome_bg.png');
         }
 
         /* --- GLASS CARD DESIGN --- */
@@ -81,12 +81,14 @@
             color: #ffffff !important; 
             font-weight: 700; 
             font-size: 16px; 
+            line-height: 1.5;
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
             word-break: break-word;
-            margin-top: 10px;
+            margin-top: 6px;
+            white-space: pre-wrap; /* Preserves multi-line breaks on mobile screens */
         }
 
-        input, select { 
+        input, select, textarea { 
             width: 100%; 
             padding: 14px; 
             margin: 6px 0; 
@@ -95,10 +97,18 @@
             font-size: 15px;
             background: rgba(255, 255, 255, 0.9);
             font-family: inherit;
+            resize: vertical;
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             outline: 2px solid var(--primary);
+        }
+
+        .heart-divider {
+            font-size: 22px;
+            margin: 8px 0 2px 0;
+            filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+            animation: pulse 2s infinite ease-in-out;
         }
 
         .btn { 
@@ -134,6 +144,11 @@
             0% { transform: scale(0); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
     </style>
 </head>
 <body>
@@ -141,7 +156,9 @@
 <div id="ownerSection" class="card">
     <h2>QR Setup</h2>
     <input type="text" id="phone" placeholder="Phone Number">
-    <input type="text" id="msg" placeholder="Message (Chinese supported)">
+    
+    <!-- Multi-line input area allowing Enter for line breaks -->
+    <textarea id="msg" placeholder="Message (Press Enter for line breaks)" rows="3"></textarea>
     
     <!-- Theme Selection Dropdown -->
     <select id="themeSelect">
@@ -155,8 +172,9 @@
 </div>
 
 <div id="scannerSection" class="card hidden">
-    <div id="iconBox" style="margin-bottom: 15px;"></div>
+    <div id="iconBox" style="margin-bottom: 10px;"></div>
     <h2 id="scanTitle">Checking...</h2>
+    <div id="heartBox" class="heart-divider hidden">❤️</div>
     <p id="scanStatus"></p>
 </div>
 
@@ -216,26 +234,29 @@
                 const data = doc.data();
                 docRef.update({ isUsed: true });
 
-                // Telegram Alert Setup using dynamic prefix
+                // Telegram Alert Setup using dynamic prefix and line breaks
                 const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
                 const chatId = "623086762";
-                const alertText = `${activeTheme.telegramPrefix}: ${data.msg || 'No message'} (Phone: ${data.phone})`;
+                const alertText = `${activeTheme.telegramPrefix}:\n${data.msg || 'No message'}\n(Phone: ${data.phone})`;
                 
                 fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(alertText)}`);
 
-                // Update output elements with the theme icon and title
+                // Update mobile output elements with theme details & pulsing heart icon
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 70px; animation: pop 0.6s ease-out;">${activeTheme.icon}</div>`;
                 document.getElementById('scanTitle').innerText = activeTheme.title;
+                document.getElementById('heartBox').classList.remove('hidden');
                 document.getElementById('scanStatus').innerText = data.msg || "谢谢！";
             } else {
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 70px;">❌</div>`;
                 document.getElementById('scanTitle').innerText = "扫码失败";
+                document.getElementById('heartBox').classList.add('hidden');
                 document.getElementById('scanStatus').style.color = "var(--error)";
                 document.getElementById('scanStatus').innerText = "此码已被扫过了。";
             }
         }).catch((error) => {
             console.error("Error reading database: ", error);
             document.getElementById('scanTitle').innerText = "错误";
+            document.getElementById('heartBox').classList.add('hidden');
             document.getElementById('scanStatus').innerText = "无法读取数据库信息。";
         });
     }
