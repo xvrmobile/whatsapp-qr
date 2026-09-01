@@ -70,18 +70,30 @@
         }
 
         /* ========================================================= */
-        /* INDIVIDUAL THEME CONFIGURATIONS (COLOR & BOLDNESS)         */
+        /* INDIVIDUAL THEME CONFIGURATIONS                           */
         /* ========================================================= */
 
         /* --- THEME 1: WEDDING --- */
         body.theme-wedding {
-            background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('188.png');
+            /* Restored original background image without dark gradient overlay */
+            background-image: url('188.png');
         }
+
+        /* Removes the rounded glass card box specifically for Wedding theme */
+        body.theme-wedding .card {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
         body.theme-wedding h2 {
             color: #000000;       /* Title Color: Black */
             font-weight: 700;     /* Title Boldness: 700 (Bold) */
             text-shadow: none;
         }
+
         body.theme-wedding #scanStatus {
             color: #000000;       /* Message Color: Black */
             font-weight: 400;     /* Message Boldness: 400 (Unbolded) */
@@ -99,7 +111,7 @@
         }
         body.theme-birthday #scanStatus {
             color: #ffffff;       /* Message Color: White */
-            font-weight: 700;     /* Message Boldness: 400 (Unbolded) */
+            font-weight: 700;     /* Message Boldness: 700 (Bold) */
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
@@ -114,7 +126,7 @@
         }
         body.theme-newhome #scanStatus {
             color: #ffffff;       /* Message Color: White */
-            font-weight: 700;     /* Message Boldness: 400 (Unbolded) */
+            font-weight: 700;     /* Message Boldness: 700 (Bold) */
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
@@ -276,7 +288,9 @@
 
                 // Update mobile UI
                 document.getElementById('iconBox').innerHTML = `<div style="font-size: 70px; animation: pop 0.6s ease-out;">${activeTheme.icon}</div>`;
-                document.getElementById('scanTitle').innerText = activeTheme.title;
+                
+                // Formats \n in theme title to <br> for multi-line titles
+                document.getElementById('scanTitle').innerHTML = activeTheme.title.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
                 document.getElementById('heartBox').classList.remove('hidden');
                 
                 // Format typed \n or Enter line breaks into HTML <br>
