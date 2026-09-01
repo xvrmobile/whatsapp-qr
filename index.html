@@ -57,12 +57,10 @@
             font-size: 24px; 
             margin-top: 0;
             margin-bottom: 10px;
-            font-weight: 700;
             transition: color 0.3s ease;
         }
 
         #scanStatus { 
-            font-weight: 400; /* Unbolded message text */
             font-size: 16px; 
             line-height: 1.5;
             word-break: break-word;
@@ -71,44 +69,56 @@
             transition: color 0.3s ease;
         }
 
-        /* --- THEME 1: WEDDING (BLACK TEXT) --- */
+        /* ========================================================= */
+        /* INDIVIDUAL THEME CONFIGURATIONS (COLOR & BOLDNESS)         */
+        /* ========================================================= */
+
+        /* --- THEME 1: WEDDING --- */
         body.theme-wedding {
             background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('188.png');
         }
         body.theme-wedding h2 {
-            color: #000000;
+            color: #000000;       /* Title Color: Black */
+            font-weight: 700;     /* Title Boldness: 700 (Bold) */
             text-shadow: none;
         }
         body.theme-wedding #scanStatus {
-            color: #000000;
+            color: #000000;       /* Message Color: Black */
+            font-weight: 400;     /* Message Boldness: 400 (Unbolded) */
             text-shadow: none;
         }
 
-        /* --- THEME 2: BIRTHDAY (WHITE TEXT) --- */
+        /* --- THEME 2: BIRTHDAY --- */
         body.theme-birthday {
             background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('birthday_bg.png');
         }
         body.theme-birthday h2 {
-            color: #ffffff;
+            color: #ffffff;       /* Title Color: White */
+            font-weight: 700;     /* Title Boldness: 700 (Bold) */
             text-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
         body.theme-birthday #scanStatus {
-            color: #ffffff;
+            color: #ffffff;       /* Message Color: White */
+            font-weight: 700;     /* Message Boldness: 400 (Unbolded) */
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
-        /* --- THEME 3: NEW HOME (WHITE TEXT) --- */
+        /* --- THEME 3: NEW HOME --- */
         body.theme-newhome {
             background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('newhome_bg.png');
         }
         body.theme-newhome h2 {
-            color: #ffffff;
+            color: #ffffff;       /* Title Color: White */
+            font-weight: 700;     /* Title Boldness: 700 (Bold) */
             text-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
         body.theme-newhome #scanStatus {
-            color: #ffffff;
+            color: #ffffff;       /* Message Color: White */
+            font-weight: 700;     /* Message Boldness: 400 (Unbolded) */
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
+
+        /* ========================================================= */
 
         /* --- FORM ELEMENTS --- */
         input, select, textarea { 
@@ -178,7 +188,7 @@
 <body>
 
 <div id="ownerSection" class="card">
-    <h2 style="color: #ffffff;">QR Setup</h2>
+    <h2 style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">QR Setup</h2>
     <input type="text" id="phone" placeholder="Phone Number">
     
     <!-- Textarea field supporting line breaks -->
@@ -225,13 +235,13 @@
         wedding: {
             bodyClass: 'theme-wedding',
             icon: '💐',
-            title: '幸福长久，相敬如宾, 惜缘！',
+            title: '幸福长久，相敬如宾, \n惜缘！',
             telegramPrefix: '💐 Wedding Scan'
         },
         birthday: {
             bodyClass: 'theme-birthday',
             icon: '🎂',
-            title: '祝你生日快乐，心想事成！',
+            title: '生日快乐，心想事成！',
             telegramPrefix: '🎂 Birthday Scan'
         },
         newhome: {
