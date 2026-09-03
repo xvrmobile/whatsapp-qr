@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Manager</title>
+    <!-- Elegant Font Imports -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
@@ -24,7 +25,7 @@
             margin: 0; 
             display: flex; 
             justify-content: center; 
-            align-items: flex-end; 
+            align-items: flex-end; /* Default: stick to bottom for non-wedding themes */
             min-height: 100vh;
             min-height: 100dvh;
             width: 100vw;
@@ -75,6 +76,7 @@
         /* --- THEME 1: WEDDING --- */
         body.theme-wedding {
             background-image: url('188.png');
+            align-items: center !important; /* Centered vertically only for Wedding */
         }
 
         body.theme-wedding .card {
@@ -83,6 +85,7 @@
             box-shadow: none;
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
+            margin-bottom: 0 !important; /* Removes bottom margin offset for perfect vertical centering */
         }
 
         body.theme-wedding h2 {
@@ -200,6 +203,7 @@
     <h2 style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">QR Setup</h2>
     <input type="text" id="phone" placeholder="Phone Number">
     
+    <!-- Textarea field supporting line breaks -->
     <textarea id="msg" placeholder="Message (Press Enter or use \n for line breaks)" rows="3"></textarea>
     
     <select id="themeSelect">
