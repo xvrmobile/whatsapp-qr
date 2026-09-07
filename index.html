@@ -88,14 +88,12 @@
             margin-bottom: 0 !important; /* Removes bottom margin offset for perfect vertical centering */
         }
 
-        /* PASTE IT HERE */
         body.theme-wedding #iconBox {
             color: #c0392b; /* Traditional Crimson Red */
             font-family: 'Noto Serif SC', serif;
             font-weight: bold;
         }
 
-        
         body.theme-wedding h2 {
             color: #000000;       /* Title Color: Black */
             font-weight: 700;     /* Title Boldness: 700 (Bold) */
@@ -207,6 +205,9 @@
 </head>
 <body>
 
+<!-- Hidden Audio Player -->
+<audio id="bgMusic" loop></audio>
+
 <div id="ownerSection" class="card">
     <h2 style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">QR Setup</h2>
     <input type="text" id="phone" placeholder="Phone Number">
@@ -256,25 +257,51 @@
             bodyClass: 'theme-wedding',
             icon: '囍',
             title: '幸福长久，相敬如宾, \n 惜缘！',
-            telegramPrefix: 'Wedding Scan'
+            telegramPrefix: 'Wedding Scan',
+            audio: 'wedding_music.mp3' // Change to your wedding MP3 filename/URL
         },
         birthday: {
             bodyClass: 'theme-birthday',
             icon: '🎂',
             title: '生日快乐，心想事成！',
-            telegramPrefix: '🎂 Birthday Scan'
+            telegramPrefix: '🎂 Birthday Scan',
+            audio: 'birthday_music.mp3' // Change to your birthday MP3 filename/URL
         },
         newhome: {
             bodyClass: 'theme-newhome',
             icon: '🏠',
             title: '乔迁之喜，阖家欢乐，\n 顺心如意！',
-            telegramPrefix: '🏠 New Home Scan'
+            telegramPrefix: '🏠 New Home Scan',
+            audio: '' // Leave empty if no music for this theme
         }
     };
 
     // Apply active theme class to <body>
     const activeTheme = themeConfig[urlTheme] || themeConfig.wedding;
     document.body.className = activeTheme.bodyClass;
+
+    // Helper to handle background music playback
+    function playAudio(audioFile) {
+        if (!audioFile) return;
+        const audio = document.getElementById('bgMusic');
+        audio.src = audioFile;
+        audio.volume = 0.5;
+
+        // Try playing audio automatically
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(() => {
+                // Autoplay was blocked by browser policies — play on user's first tap/click anywhere
+                const unlockAudio = () => {
+                    audio.play();
+                    document.removeEventListener('click', unlockAudio);
+                    document.removeEventListener('touchstart', unlockAudio);
+                };
+                document.addEventListener('click', unlockAudio);
+                document.addEventListener('touchstart', unlockAudio);
+            });
+        }
+    }
 
     // Handle Scan Mode
     if (qrId) {
@@ -286,6 +313,9 @@
             if (doc.exists && !doc.data().isUsed) {
                 const data = doc.data();
                 docRef.update({ isUsed: true });
+
+                // Start playing background music for the active theme
+                playAudio(activeTheme.audio);
 
                 // Telegram Alert Setup
                 const token = "8713373047:AAEQmNUr5Eewo0TEt_RDcYy9kxii27-bdvY";
