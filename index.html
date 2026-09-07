@@ -37,6 +37,41 @@
             transition: background 0.3s ease;
         }
 
+        /* --- AUDIO INDICATOR BUTTON (BOTTOM-LEFT) --- */
+        .audio-control {
+            position: fixed;
+            bottom: 35px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transition: transform 0.2s ease;
+        }
+
+        .audio-control:active {
+            transform: scale(0.92);
+        }
+
+        .audio-playing {
+            animation: spin 4s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* --- BASE GLASS CARD DESIGN --- */
         .card { 
             background: rgba(255, 255, 255, 0.05);
@@ -208,6 +243,9 @@
 <!-- Hidden Audio Player -->
 <audio id="bgMusic" loop></audio>
 
+<!-- Audio Floating Toggle Icon -->
+<div id="audioToggle" class="audio-control hidden" onclick="toggleAudio()">🎵</div>
+
 <div id="ownerSection" class="card">
     <h2 style="color: #ffffff; text-shadow: 0 2px 6px rgba(0,0,0,0.4);">QR Setup</h2>
     <input type="text" id="phone" placeholder="Phone Number">
@@ -280,26 +318,56 @@
     const activeTheme = themeConfig[urlTheme] || themeConfig.wedding;
     document.body.className = activeTheme.bodyClass;
 
-    // Helper to handle background music playback
+    // Helper to handle background music playback & update indicator button
     function playAudio(audioFile) {
         if (!audioFile) return;
         const audio = document.getElementById('bgMusic');
+        const toggleBtn = document.getElementById('audioToggle');
+
         audio.src = audioFile;
         audio.volume = 0.5;
+        
+        // Show the audio icon
+        toggleBtn.classList.remove('hidden');
 
-        // Try playing audio automatically
-        const playPromise = audio.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(() => {
-                // Autoplay was blocked by browser policies — play on user's first tap/click anywhere
-                const unlockAudio = () => {
-                    audio.play();
-                    document.removeEventListener('click', unlockAudio);
-                    document.removeEventListener('touchstart', unlockAudio);
-                };
-                document.addEventListener('click', unlockAudio);
-                document.addEventListener('touchstart', unlockAudio);
+        const startPlayback = () => {
+            audio.play().then(() => {
+                toggleBtn.classList.add('audio-playing');
+                toggleBtn.innerHTML = '🎵';
+            }).catch(() => {
+                // If autoplay blocked, show muted icon so user knows they can tap it
+                toggleBtn.classList.remove('audio-playing');
+                toggleBtn.innerHTML = '🔇';
             });
+        };
+
+        startPlayback();
+
+        // Autoplay unlock fallback
+        const unlockAudio = () => {
+            if (audio.paused) {
+                startPlayback();
+            }
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+    }
+
+    // Toggle audio manually when user clicks the icon
+    function toggleAudio() {
+        const audio = document.getElementById('bgMusic');
+        const toggleBtn = document.getElementById('audioToggle');
+
+        if (audio.paused) {
+            audio.play();
+            toggleBtn.classList.add('audio-playing');
+            toggleBtn.innerHTML = '🎵';
+        } else {
+            audio.pause();
+            toggleBtn.classList.remove('audio-playing');
+            toggleBtn.innerHTML = '🔇';
         }
     }
 
